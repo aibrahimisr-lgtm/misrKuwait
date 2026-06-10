@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #e7000b;
+  --secondary: #102237;
+  --accent: #e74c3c;
+  --neutral-light: #f4f4f4;
+  --neutral-dark: #333333;
+}
+
+::selection {
+  background-color: var(--accent);
+  color: var(--neutral-light);
+}
+
+@layer utilities {
+  .bg-primary {
+    background-color: var(--primary);
+  }
+
+  .bg-secondary {
+    background-color: var(--secondary);
+  }
+
+  .text-primary {
+    color: var(--primary);
+  }
+
+  .text-secondary {
+    color: var(--secondary);
+  }
+}
+
+body {
+  background-color: var(--neutral-light);
+  color: var(--neutral-dark);
+}
+
+* {
+  direction: rtl;
+  font-family: "Tajawal", sans-serif;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+}
+
+.active {
+  color: #dc2626;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.contact-form option {
+  background-color: #111827;
+  color: white;
+}
+
+.option-select {
+  background-color: var(--secondary);
+  color: white;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
