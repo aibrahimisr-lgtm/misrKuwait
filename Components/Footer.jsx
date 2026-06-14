@@ -1,11 +1,20 @@
+import ReactGA from "react-ga4"; 
+import { Link } from "react-router-dom";
 import logo from "../assets/logo.png";
 import WhatsApp from "../assets/SocialIcons/Whatsapp.png";
 import FacebookF from "../assets/SocialIcons/FacebookF.png";
 import Instagram from "../assets/SocialIcons/Instagram.png";
 import LinkedIn from "../assets/SocialIcons/linkedin.png";
-import { Link } from "react-router-dom";
 
 const Footer = () => {
+  const handleClickFB = () => {
+    ReactGA.event({
+      category: "Social",
+      action: "Facebook_Share",
+      label: "Facebook Share Button",
+    });
+  };
+
   return (
     <footer className="bg-secondary text-white pt-10 sm:pt-14 lg:pt-16 pb-8 mt-10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -32,6 +41,7 @@ const Footer = () => {
                 href="https://web.facebook.com/MisrInsuranceOfficial?_rdc=1&_rdr#"
                 target="_blank"
                 className="transition-colors facebook-share-button"
+                onClick={handleClickFB}
               >
                 <img src={FacebookF} alt="FaceBookIcon" className="w-25" />
               </a>

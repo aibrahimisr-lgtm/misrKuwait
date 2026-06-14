@@ -1,4 +1,10 @@
-import { createContext, useContext, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 
 const FormContext = createContext();
 
@@ -7,17 +13,10 @@ const initialForms = {
     step: 0,
     category: "",
     formData: {
-      userName: "",
-      userPhone: "",
-      userEmail: "",
+      FullName: "",
+      Phone: "",
+      Email: "",
     },
-    error: false,
-    isSubmitting: false,
-  },
-  accident: {
-    step: 0,
-    accidentType: "",
-    formData: {},
     error: false,
     isSubmitting: false,
   },
@@ -26,19 +25,16 @@ const initialForms = {
 export const FormProvider = ({ children }) => {
   const [forms, setForms] = useState(initialForms);
 
-  const updateForm = (formKey, updates) => {
+  const updateForm = useCallback((formKey, updates) => {
     setForms((prev) => ({
       ...prev,
-      [formKey]: {
-        ...prev[formKey],
-        ...updates,
-      },
+      [formKey]: { ...prev[formKey], ...updates },
     }));
-  };
+  }, []);
 
-  const handleChange = (formKey, e) => {
-    const { name, value } = e.target;
-
+  const handleChange = useCallback((formKey, e) => {
+    const { name, value, type, files } = e.target;
+    const fieldValue = type === "file" ? files[0] : value;
     setForms((prev) => ({
       ...prev,
       [formKey]: {
@@ -46,72 +42,57 @@ export const FormProvider = ({ children }) => {
         error: false,
         formData: {
           ...prev[formKey].formData,
-          [name]: value,
+          [name]: fieldValue,
         },
       },
     }));
-  };
+  }, []);
 
-  // NEW: Function to handle the Axios API call
-  const submitForm = async (formKey, endpoint) => {
-    // Set loading state to true
-    updateForm(formKey, { isSubmitting: true, error: false });
-
-    try {
-      // The context already holds exactly what the backend needs in formData
-      const payload = forms[formKey].formData;
-
-      // Example endpoint: /KuwaitMIC/Accident/CreateCarAccident
-      const response = await axios.post(endpoint, payload);
-
-      console.log(`${formKey} submitted successfully:`, response.data);
-
-      // Optionally reset the form or move to a "Success" step here
-      // updateForm(formKey, { step: forms[formKey].step + 1 });
-
-      return response.data;
-    } catch (error) {
-      console.error(`Error submitting ${formKey}:`, error);
-      updateForm(formKey, { error: true });
-      throw error;
-    } finally {
-      // Turn off loading state regardless of success or failure
-      updateForm(formKey, { isSubmitting: false });
-    }
-  };
-
-  const resetForm = (formKey) => {
+  const resetForm = useCallback((formKey) => {
     setForms((prev) => ({
       ...prev,
       [formKey]: initialForms[formKey],
     }));
-  };
+  }, []);
 
-  return (
-    <FormContext.Provider
-      value={{
-        forms,
-        updateForm,
-        handleChange,
-        resetForm,
-      }}
-    >
-      {children}
-    </FormContext.Provider>
+  const value = useMemo(
+    () => ({ forms, updateForm, handleChange, resetForm }),
+    [forms, updateForm, handleChange, resetForm],
   );
+
+  return <FormContext.Provider value={value}>{children}</FormContext.Provider>;
 };
 
 export const useFormContext = (formKey) => {
-  const context = useContext(FormContext);
-
-  if (!context) {
+  const { forms, updateForm, handleChange, resetForm } =
+    useContext(FormContext);
+  if (!forms)
     throw new Error("useFormContext must be used inside FormProvider");
-  }
 
-  return {
-    form: context.forms[formKey],
-    updateForm: (updates) => context.updateForm(formKey, updates),
-    handleChange: (e) => context.handleChange(formKey, e),
-    resetForm: () => context.resetForm(formKey),
-  };
+  const boundUpdateForm = useCallback(
+    (updates) => updateForm(formKey, updates),
+    [updateForm, formKey],
+  );
+
+  const boundHandleChange = useCallback(
+    (e) => handleChange(formKey, e),
+    [handleChange, formKey],
+  );
+
+  const boundResetForm = useCallback(
+    () => resetForm(formKey),
+    [resetForm, formKey],
+  );
+
+  return useMemo(
+    () => ({
+      form: forms[formKey],
+      updateForm: boundUpdateForm,
+      handleChange: boundHandleChange,
+      resetForm: boundResetForm,
+    }),
+    [forms[formKey], boundUpdateForm, boundHandleChange, boundResetForm],
+  );
 };
+
+export default FormProvider;

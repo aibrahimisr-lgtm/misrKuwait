@@ -1,12 +1,16 @@
-import React, { useEffect } from "react"; // Added useEffect
+import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, Send } from "lucide-react";
 import { insuranceConfigs } from "../../Config/formConfigs.js";
 import { useFormContext } from "../../Context/FormContext.jsx";
+import { useOffer } from "../../Context/OfferContext";
 
 const QuoteRequestModal = ({ onClose }) => {
   const { form, updateForm, handleChange, resetForm } = useFormContext("quote");
-  const { step, category, formData, error } = form;
+  const { step, category, formData } = form;
+  const { submitOffer, loading, error: apiError } = useOffer();
+
+  const [validationError, setValidationError] = useState("");
+
   const FIELDS_PER_STEP = 2;
   const dynamicFields = category ? insuranceConfigs[category].fields : [];
   const totalSteps = 2 + Math.ceil(dynamicFields.length / FIELDS_PER_STEP);
@@ -20,48 +24,72 @@ const QuoteRequestModal = ({ onClose }) => {
     if (onClose) onClose();
   };
 
-  const nextStep = () => {
-    // STEP 0 VALIDATION
+  const handleLocalChange = (e) => {
+    const { name, value, type, files } = e.target;
+
+    if (name === "Phone") {
+      const onlyNums = value.replace(/[^0-9]/g, "");
+      handleChange({ target: { name, value: onlyNums, type, files } });
+      return;
+    }
+
+    handleChange(e);
+  };
+
+  const nextStep = async () => {
+    setValidationError("");
+
     if (step === 0) {
-      if (!formData.userName || !formData.userPhone || !formData.userEmail) {
-        updateForm({ error: true });
+      if (!formData.FullName || !formData.Phone || !formData.Email) {
+        setValidationError("يرجى تعبئة جميع الحقول المطلوبة");
+        return;
+      }
+
+      if (formData.Phone.length < 8) {
+        setValidationError(
+          "رقم الهاتف غير صحيح (يجب أن يحتوي على 8 أرقام على الأقل)",
+        );
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.Email)) {
+        setValidationError("يرجى إدخال بريد إلكتروني صحيح");
         return;
       }
     }
 
-    // STEP 1 VALIDATION
     if (step === 1 && !category) {
-      updateForm({ error: true });
+      setValidationError("يرجى اختيار نوع التأمين للمتابعة");
       return;
     }
 
-    // DYNAMIC VALIDATION
     if (step >= 2) {
       const startIndex = (step - 2) * FIELDS_PER_STEP;
       const currentStepFields = dynamicFields.slice(
         startIndex,
         startIndex + FIELDS_PER_STEP,
       );
-      const hasEmptyField = currentStepFields.some(
-        (field) => !formData[field.name],
-      );
 
-      if (hasEmptyField) {
-        updateForm({ error: true });
+      if (currentStepFields.some((field) => !formData[field.name])) {
+        setValidationError("يرجى تعبئة جميع الحقول في هذه الصفحة");
         return;
       }
     }
 
     if (step < totalSteps - 1) {
-      updateForm({ step: step + 1, error: false });
+      updateForm({ step: step + 1 });
     } else {
-      console.log("Final Data Submission:", formData);
-      handleClose();
+      try {
+        await submitOffer(category, formData);
+        handleClose();
+      } catch (err) {}
     }
   };
 
   const prevStep = () => {
-    updateForm({ step: step - 1, error: false });
+    setValidationError("");
+    updateForm({ step: step - 1 });
   };
 
   return (
@@ -73,6 +101,18 @@ const QuoteRequestModal = ({ onClose }) => {
         />
       </div>
 
+      {apiError && (
+        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-2xl text-center border border-red-300">
+          حدث خطأ أثناء الإرسال: {apiError}
+        </div>
+      )}
+
+      {validationError && (
+        <div className="mb-4 p-3 bg-yellow-50 text-yellow-700 rounded-2xl text-center border border-yellow-200">
+          {validationError}
+        </div>
+      )}
+
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
@@ -80,195 +120,164 @@ const QuoteRequestModal = ({ onClose }) => {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 20 }}
         >
-          {/* STEP 0 */}
           {step === 0 && (
             <div className="space-y-4">
-              <div className="flex">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">
-                  البيانات الشخصية
-                </h3>
-              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-4">
+                البيانات الشخصية
+              </h3>
               <div className="grid grid-cols-1 gap-4">
                 {[
                   {
                     label: "الاسم الكامل",
-                    name: "userName",
-                    placeholder: "أدخل اسمك الثلاثي",
+                    name: "FullName",
                     type: "text",
+                    autoComplete: "name",
                   },
                   {
                     label: "رقم الهاتف",
-                    name: "userPhone",
-                    placeholder: "965xxxxxxx",
+                    name: "Phone",
                     type: "tel",
+                    autoComplete: "tel",
                   },
                   {
                     label: "البريد الالكتروني",
-                    name: "userEmail",
-                    placeholder: "example@example.com",
+                    name: "Email",
                     type: "email",
+                    autoComplete: "email",
                   },
                 ].map((field) => (
-                  <motion.div
-                    key={field.name}
-                    animate={
-                      error && !formData[field.name]
-                        ? { x: [-4, 4, -4, 4, 0] }
-                        : {}
-                    }
-                  >
-                    <label className="block text-gray-700 mb-2 font-medium">
+                  <div key={field.name}>
+                    <label
+                      htmlFor={field.name}
+                      className="block text-gray-700 mb-2 font-medium"
+                    >
                       {field.label}
                     </label>
                     <input
+                      id={field.name}
                       type={field.type}
                       name={field.name}
+                      autoComplete={field.autoComplete}
                       value={formData[field.name] || ""}
-                      onChange={handleChange}
-                      className={`w-full p-4 border rounded-2xl outline-none transition-all ${
-                        error && !formData[field.name]
-                          ? "border-red-500 bg-red-50"
-                          : "border-gray-200 focus:border-red-600"
-                      }`}
-                      placeholder={field.placeholder}
+                      onChange={handleLocalChange}
+                      className="w-full p-4 border rounded-2xl border-gray-200 focus:border-red-600 outline-none"
+                      dir={field.name !== "FullName" ? "ltr" : "rtl"}
                     />
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* STEP 1 */}
           {step === 1 && (
             <div className="space-y-4">
               <h3 className="text-xl font-bold text-gray-800 mb-4">
                 اختر نوع التأمين
               </h3>
-              <motion.div
-                animate={error && !category ? { x: [-4, 4, -4, 4, 0] } : {}}
-                className="grid grid-cols-1 md:grid-cols-2 gap-3"
-              >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {Object.keys(insuranceConfigs).map((key) => (
                   <button
                     key={key}
                     type="button"
                     onClick={() => {
-                      // 3. FIXED: Use updateForm instead of setCategory/setError
-                      updateForm({ category: key, error: false });
+                      setValidationError("");
+                      updateForm({ category: key });
                     }}
-                    className={`p-4 text-center rounded-2xl border-2 transition-all font-bold ${
+                    className={`p-4 text-center rounded-2xl border-2 font-bold transition-colors ${
                       category === key
                         ? "border-red-600 bg-red-50 text-red-700"
-                        : error && !category
-                          ? "border-red-200 animate-pulse"
-                          : "border-gray-100 hover:border-red-200"
+                        : "border-gray-100 hover:border-gray-300"
                     }`}
                   >
                     {insuranceConfigs[key].title}
                   </button>
                 ))}
-              </motion.div>
+              </div>
             </div>
           )}
 
-          {/* DYNAMIC STEPS (Step 2+) */}
           {step >= 2 && (
             <div className="space-y-4">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-red-600">
-                  {insuranceConfigs[category].title}
-                </h3>
-                <span className="text-sm text-gray-400">
-                  صفحة {step - 1} من {totalSteps - 2}
-                </span>
-              </div>
+              <h3 className="text-xl font-bold text-red-600">
+                {insuranceConfigs[category].title}
+              </h3>
               <div className="grid grid-cols-1 gap-6">
-                {(() => {
-                  const startIndex = (step - 2) * FIELDS_PER_STEP;
-                  const currentStepFields = dynamicFields.slice(
-                    startIndex,
-                    startIndex + FIELDS_PER_STEP,
-                  );
-
-                  return currentStepFields.map((field) => {
-                    const hasValue = !!formData[field.name];
-                    return (
-                      <motion.div
-                        key={field.name}
-                        animate={
-                          error && !hasValue ? { x: [-4, 4, -4, 4, 0] } : {}
-                        }
+                {dynamicFields
+                  .slice(
+                    (step - 2) * FIELDS_PER_STEP,
+                    (step - 2) * FIELDS_PER_STEP + FIELDS_PER_STEP,
+                  )
+                  .map((field) => (
+                    <div key={field.name}>
+                      <label
+                        htmlFor={field.name}
+                        className="block text-gray-700 mb-2 font-bold"
                       >
-                        <label className="block text-gray-700 mb-2 font-bold text-md">
-                          {field.label}
-                        </label>
-                        {field.type === "select" ? (
-                          <select
-                            name={field.name}
-                            value={formData[field.name] || ""}
-                            onChange={handleChange}
-                            className={`w-full p-4 border rounded-2xl outline-none bg-white transition-all ${
-                              error && !hasValue
-                                ? "border-red-500 bg-red-50"
-                                : "border-gray-200 focus:border-red-600"
-                            }`}
-                          >
-                            <option value="">اختر...</option>
-                            {field.options.map((opt, i) => (
-                              <option key={i} value={opt}>
-                                {opt}
+                        {field.label}
+                      </label>
+                      {field.type === "select" ? (
+                        <select
+                          id={field.name}
+                          name={field.name}
+                          autoComplete={field.autoComplete || "off"}
+                          value={formData[field.name] || ""}
+                          onChange={handleLocalChange}
+                          className="w-full p-4 border rounded-2xl border-gray-200 focus:border-red-600 outline-none"
+                        >
+                          <option value="">اختر...</option>
+                          {field.options.map((opt) => {
+                            const isObject =
+                              typeof opt === "object" && opt !== null;
+                            const optVal = isObject ? opt.value : opt;
+                            const optLabel = isObject ? opt.label : opt;
+                            return (
+                              <option key={optVal} value={optVal}>
+                                {optLabel}
                               </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <input
-                            type={field.type}
-                            name={field.name}
-                            {...(field.type !== "file" && {
-                              value: formData[field.name] || "",
-                            })}
-                            onChange={handleChange}
-                            placeholder="مطلوب..."
-                            className={`w-full p-4 border rounded-2xl outline-none transition-all ${
-                              error && !hasValue
-                                ? "border-red-500 bg-red-50"
-                                : "border-gray-200 focus:border-red-600"
-                            }`}
-                          />
-                        )}
-                      </motion.div>
-                    );
-                  });
-                })()}
+                            );
+                          })}
+                        </select>
+                      ) : field.type === "file" ? (
+                        <input
+                          id={field.name}
+                          type="file"
+                          name={field.name}
+                          onChange={handleLocalChange}
+                          className="w-full p-4 border rounded-2xl border-gray-200"
+                        />
+                      ) : (
+                        <input
+                          id={field.name}
+                          type={field.type}
+                          name={field.name}
+                          autoComplete={field.autoComplete || "off"}
+                          value={formData[field.name] || ""}
+                          onChange={handleLocalChange}
+                          className="w-full p-4 border rounded-2xl border-gray-200 focus:border-red-600 outline-none"
+                        />
+                      )}
+                    </div>
+                  ))}
               </div>
             </div>
           )}
 
-          {/* BUTTONS */}
           <div className="flex gap-3 mt-8">
             <button
               onClick={nextStep}
-              className={`flex-2 text-white font-bold py-4 rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg ${
-                step < totalSteps - 1
-                  ? "bg-red-600 hover:bg-red-700 shadow-red-100"
-                  : "bg-green-600 hover:bg-green-700 shadow-green-100"
-              }`}
+              disabled={loading}
+              className="flex-1 text-white font-bold py-4 px-8 rounded-2xl bg-red-600 disabled:opacity-60 transition-opacity"
             >
-              {step < totalSteps - 1 ? (
-                <>
-                  التالي <ChevronLeft size={20} />
-                </>
-              ) : (
-                <>
-                  إرسال الطلب <Send size={20} />
-                </>
-              )}
+              {loading
+                ? "جاري الإرسال..."
+                : step < totalSteps - 1
+                  ? "التالي"
+                  : "إرسال"}
             </button>
-
-            {step > 0 && (
+            {step > 0 && !loading && (
               <button
                 onClick={prevStep}
-                className="flex-1 px-6 py-4 border border-gray-300 rounded-2xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 font-bold text-gray-600"
+                className="flex-1 px-6 py-4 border border-gray-300 rounded-2xl font-bold hover:bg-gray-50 transition-colors"
               >
                 السابق
               </button>

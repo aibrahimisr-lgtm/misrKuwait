@@ -6,6 +6,7 @@ import "./App.css";
 import HomePage from "./Pages/HomePage";
 import JobPortalPage from "./Pages/JobPortalPage";
 import ContactPage from "./Pages/ContactPage";
+import Counter from "./Components/Tools/CounterComponent";
 
 // About Sub-Pages
 import HistroyPage from "./Pages/SubPages/AboutPages/HistroyPage";
@@ -22,7 +23,10 @@ import NotFoundPage from "./Pages/NotFoundPage";
 import PersonalAccidents from "./Pages/SubPages/ServicesPages/PersonalAccidents";
 
 import { FormProvider } from "./Context/FormContext";
-import Counter from "./Components/Tools/CounterComponent";
+import { CarAccidentContextProvider } from "./Context/CarAccidentContext";
+import { OtherAccidentProvider } from "./Context/OtherAccidentContext";
+import { JobProvider } from "./Context/JobContext";
+import { OfferProvider } from "./Context/OfferContext";
 
 const router = createBrowserRouter([
   {
@@ -118,6 +122,7 @@ const router = createBrowserRouter([
       },
     ],
   },
+
   {
     path: "*",
     element: <NotFoundPage />,
@@ -128,7 +133,15 @@ const router = createBrowserRouter([
 function App() {
   return (
     <FormProvider>
-      <RouterProvider router={router} />
+      <CarAccidentContextProvider>
+        <OtherAccidentProvider>
+          <JobProvider>
+            <OfferProvider>
+              <RouterProvider router={router} />
+            </OfferProvider>
+          </JobProvider>
+        </OtherAccidentProvider>
+      </CarAccidentContextProvider>
     </FormProvider>
   );
 }

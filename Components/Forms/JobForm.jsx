@@ -1,18 +1,19 @@
-import {
-  Clock,
-  Mail,
-  MapPin,
-  PhoneCall,
-  User,
-  Phone,
-  ChevronDown,
-  Upload,
-  Globe,
-} from "lucide-react";
-
-import { useRef } from "react";
+import { Upload } from "lucide-react";
+import { useRef, useState } from "react";
+import { useJob } from "../../Context/JobContext";
 
 const JobForm = () => {
+  const { submitJobApplication, loading, success, error } = useJob();
+  const [position, setPosition] = useState("");
+  const [otherPosition, setOtherPosition] = useState("");
+  const [experience, setExperience] = useState("");
+
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+
+  const [file, setFile] = useState(null);
+
   const fileInputRef = useRef(null);
 
   const handleDivClick = () => {
@@ -20,102 +21,141 @@ const JobForm = () => {
   };
 
   const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      console.log("Selected file:", file.name);
+    const selectedFile = event.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const payload = new FormData();
+
+    payload.append("fullName", fullName);
+    payload.append("email", email);
+    payload.append("phone", phone);
+
+    const finalPosition = position === "other" ? otherPosition : position;
+    payload.append("position", finalPosition);
+
+    const customMessage = experience ? `سنوات الخبرة: ${experience}` : "";
+    payload.append("message", customMessage);
+
+    if (file) {
+      payload.append("cv", file);
+    }
+
+    try {
+      await submitJobApplication(payload);
+    } catch (err) {}
   };
 
   return (
     <div className="bg-secondary rounded-[3rem] p-10 md:p-14 shadow-2xl relative z-10 overflow-hidden">
-      <div className="absolute top-0 right-0 w-64 h-64 bg-red-50 opacity-20 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2"></div>
-
-      <div className="absolute top-0 right-0 w-64 h-64 bg-red-100 opacity-20 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2"></div>
-
-      <form className="space-y-8 relative z-10" style={{ opacity: 1 }}>
+      <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
         <h3 className="text-xl sm:text-3xl font-black text-white">
           تقدم الآن للوظيفة
         </h3>
-
-        {/* Name + Phone */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-3">
-            <label className="text-white/80 font-bold text-md sm:text-lg">
-              الاسم بالكامل
-            </label>
+            <label className="text-white/80 font-bold">الاسم بالكامل</label>
             <input
-              className="flex w-full border px-3 py-2 rounded-2xl border-white/10 bg-white/5 focus:ring-red-100 h-14 text-lg text-white placeholder:text-white/20 focus:outline-none focus:ring-2"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="flex w-full border px-3 py-2 rounded-2xl border-white/10 bg-white/5 h-14 text-lg text-white"
+              placeholder="أدخل اسمك"
               required
-              placeholder="أدخل اسمك كما في البطاقة المدنية"
             />
           </div>
 
           <div className="space-y-3">
-            <label className="text-white/80 font-bold text-md sm:text-lg">
-              رقم الهاتف
-            </label>
+            <label className="text-white/80 font-bold">رقم الهاتف</label>
             <input
-              className="flex w-full border px-3 py-2 rounded-2xl border-white/10 bg-white/5 focus:ring-red-100 h-14 text-lg text-white placeholder:text-white/20 focus:outline-none focus:ring-2"
-              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="flex w-full border px-3 py-2 rounded-2xl border-white/10 bg-white/5 h-14 text-lg text-white"
               placeholder="+965 XXXX XXXX"
+              required
               dir="ltr"
             />
           </div>
         </div>
-
-        {/* Email */}
         <div className="space-y-3">
-          <label className="text-white/80 font-bold text-md sm:text-lg">
-            البريد الإلكتروني
-          </label>
+          <label className="text-white/80 font-bold">البريد الإلكتروني</label>
           <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             type="email"
-            className="flex w-full border px-3 py-2 rounded-2xl border-white/10 bg-white/5 focus:ring-red-100 h-14 text-lg text-white placeholder:text-white/20 focus:outline-none focus:ring-2"
-            required
+            className="flex w-full border px-3 py-2 rounded-2xl border-white/10 bg-white/5 h-14 text-lg text-white"
             placeholder="name@example.com"
+            required
             dir="ltr"
           />
         </div>
-
-        {/* Job Selection */}
         <div className="space-y-3">
-          <label className="text-white/80 font-bold text-md sm:text-lg">
-            الوظيفة المستهدفة
-          </label>
-          <select className="option-select flex w-full appearance-none border px-3 py-2 rounded-2xl border-white/10 focus:ring-red-100 h-14 text-lg text-white focus:outline-none focus:ring-2">
+          <label className="text-white/80 font-bold">الوظيفة المستهدفة</label>
+
+          <select
+            value={position}
+            onChange={(e) => setPosition(e.target.value)}
+            className="option-select flex w-full appearance-none border px-3 py-2 rounded-2xl border-white/10 focus:ring-red-100 h-14 text-lg text-white focus:outline-none focus:ring-2"
+          >
             <option value="">اختر الوظيفة المناسبة</option>
-            <option value="underwriting">مكتتب تأمين</option>
+            <option value="specialist">اخصائي تأمين</option>
             <option value="claims">مسؤول مطالبات</option>
             <option value="sales">مندوب مبيعات تأمين</option>
+            <option value="underwriting">مكتتب تأمين</option>
             <option value="customer-service">خدمة عملاء</option>
             <option value="it">تكنولوجيا المعلومات</option>
             <option value="other">أخرى</option>
           </select>
-        </div>
 
-        {/* Experience */}
-        <div className="space-y-3">
-          <label className="text-white/80 font-bold text-md sm:text-lg">
-            سنوات الخبرة
-          </label>
-          <input
-            type="number"
-            className="flex w-full border px-3 py-2 rounded-2xl border-white/10 bg-white/5 focus:ring-red-100 h-14 text-lg text-white placeholder:text-white/20 focus:outline-none focus:ring-2"
-            placeholder="عدد سنوات الخبرة"
-          />
+          {position === "other" && (
+            <input
+              value={otherPosition}
+              onChange={(e) => setOtherPosition(e.target.value)}
+              type="text"
+              placeholder="اكتب الوظيفة الأخرى"
+              className="flex w-full border px-3 py-2 rounded-2xl border-white/10 bg-white/5 h-14 text-lg text-white"
+              required
+            />
+          )}
         </div>
-
-        {/* CV Upload */}
         <div className="space-y-3">
-          <label className="text-white/80 font-bold text-md sm:text-lg">
-            تحميل السيرة الذاتية (CV)
-          </label>
+          <label className="text-white/80 font-bold">سنوات الخبرة</label>
+
+          <div className="flex gap-4">
+            {[
+              { label: "1-3", value: "1-3" },
+              { label: "3-5", value: "3-5" },
+              { label: "أكثر من 10 سنوات", value: "10+" },
+            ].map((item) => (
+              <button
+                key={item.value}
+                type="button"
+                onClick={() => setExperience(item.value)}
+                className={`flex-1 h-14 rounded-2xl text-lg font-bold border transition-all
+                  ${
+                    experience === item.value
+                      ? "bg-white text-black border-white"
+                      : "bg-white/5 text-white border-white/10 hover:bg-white/10"
+                  }
+                `}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="space-y-3">
+          <label className="text-white/80 font-bold">السيرة الذاتية (CV)</label>
 
           <div
             onClick={handleDivClick}
-            className="border-2 border-dashed border-white/10 rounded-2xl p-4 sm:p-8 text-center bg-white/5 cursor-pointer"
+            className="border-2 border-dashed border-white/10 rounded-2xl p-6 text-center bg-white/5 cursor-pointer"
           >
-            <Upload size={32} className="mx-auto mb-2 text-white/60" />
+            <Upload className="mx-auto mb-2 text-white/60" />
 
             <input
               type="file"
@@ -125,17 +165,23 @@ const JobForm = () => {
               accept=".pdf"
             />
 
-            <p className="text-sm font-bold text-white/60">رفع ملف PDF</p>
+            <p className="text-sm text-white/60">
+              {file ? file.name : "رفع ملف PDF"}
+            </p>
           </div>
         </div>
-
-        {/* Submit Button */}
         <button
-          className="bg-white text-primiary rounded-4xl w-full text-lg sm:text-2xl justify-center items-center font-bold py-3 px-8 sm:py-6 sm:px-10"
           type="submit"
+          disabled={loading}
+          className="bg-white text-black rounded-2xl w-full text-xl font-bold py-4 disabled:opacity-50"
         >
-          إرسال الطلب الآن
+          {loading ? "جاري الإرسال..." : "إرسال الطلب الآن"}
         </button>
+        {success && (
+          <p className="text-green-400 font-bold">تم إرسال الطلب بنجاح ✅</p>
+        )}
+
+        {error && <p className="text-red-400 font-bold">{error}</p>}
       </form>
     </div>
   );

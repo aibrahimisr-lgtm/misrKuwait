@@ -4,21 +4,19 @@ import Logo from "../../assets/logo.png";
 import img from "../../assets/9e72ae0d39b00ec28d4d9d137752c29f.jpg";
 import { motion, AnimatePresence } from "framer-motion";
 import QuoteRequestModal from "../Modals/QuoteRequestModal";
+import ReactGA from "react-ga4";
 
 const HeroSection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const Motion = motion;
 
   const handleButtonClick = () => {
-    // This sends the event to Google Analytics
     ReactGA.event({
       category: "User Interaction",
       action: "Clicked Contact Button",
       label: "Header Section",
       value: 1,
     });
-
-    console.log("Event sent to GA4!");
   };
 
   const scrollToServices = () => {
