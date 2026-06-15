@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "framer-motion";
 
 const InputField = ({ field, formik }) => {
@@ -15,7 +14,7 @@ const InputField = ({ field, formik }) => {
       transition={{ duration: 0.4 }}
     >
       <div className="flex justify-between items-end">
-        <label className="block text-gray-700 text-xs font-bold">
+        <label htmlFor={name} className="block text-gray-700 text-xs font-bold">
           {label}
           {type !== "file" && !optional && (
             <span className="text-red-500"> *</span>
@@ -30,6 +29,7 @@ const InputField = ({ field, formik }) => {
 
       {type === "select" ? (
         <select
+          id={name}
           name={name}
           value={value}
           onChange={formik.handleChange}
@@ -47,6 +47,7 @@ const InputField = ({ field, formik }) => {
         </select>
       ) : type === "file" ? (
         <input
+          id={name}
           type="file"
           name={name}
           onChange={(event) => {
@@ -57,19 +58,19 @@ const InputField = ({ field, formik }) => {
         />
       ) : (
         <input
+          id={name}
           type={type}
           name={name}
           value={value}
           placeholder={placeholder ? placeholder : ""}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          className={`w-full p-3 border rounded-2xl outline-none focus:ring-2 focus:ring-red-600 text-base transition-colors  ${
+          className={`w-full p-3 border rounded-2xl outline-none focus:ring-2 focus:ring-red-600 text-base transition-colors ${
             isInvalid ? "border-red-500 bg-red-50" : "border-gray-200"
           }`}
         />
       )}
 
-      {/* رسالة الخطأ الخاصة بكل حقل تحت الإدخال مباشرة */}
       {isInvalid && (
         <p className="text-red-500 text-xs font-semibold mt-1 px-1">{error}</p>
       )}

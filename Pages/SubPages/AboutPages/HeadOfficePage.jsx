@@ -8,7 +8,6 @@ import {
   Landmark,
   ShieldCheck,
   Award,
-  BarChart3,
   Users,
   Building2,
 } from "lucide-react";
@@ -30,10 +29,6 @@ const ContactItem = ({ icon, title, desc, isMono }) => (
   </div>
 );
 
-const History = ({ className, size }) => (
-  <Clock className={className} size={size} />
-);
-
 const HeadOfficePage = () => {
   const navigate = useNavigate();
 
@@ -50,17 +45,15 @@ const HeadOfficePage = () => {
     visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
   };
 
-  const Motion = motion;
-
   return (
-    <Motion.div
+    <motion.div
       className="max-w-6xl mx-auto px-4 mt-30 mb-20"
       dir="rtl"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
     >
-      <Motion.div variants={itemVariants} className="mb-16">
+      <motion.div variants={itemVariants} className="mb-16">
         <div className="flex items-center gap-4 mb-2">
           <div className="h-1 w-20 bg-red-700" />
           <span className="text-red-700 font-bold tracking-widest uppercase text-sm">
@@ -78,16 +71,16 @@ const HeadOfficePage = () => {
           دوراً محورياً في دعم الاقتصاد الوطني وحماية مختلف القطاعات الاقتصادية
           منذ بدايات القرن الماضي.
         </p>
-      </Motion.div>
+      </motion.div>
 
       <div className="grid lg:grid-cols-12 gap-8">
-        <Motion.div
+        <motion.div
           variants={itemVariants}
           className="lg:col-span-7 space-y-12"
         >
           <section className="space-y-4">
             <h2 className="text-2xl font-bold flex items-center gap-2 text-gray-800">
-              <History className="text-red-700" size={28} /> نبذة عن المركز
+              <Clock className="text-red-700" size={28} /> نبذة عن المركز
               الرئيسي
             </h2>
             <p className="text-gray-700 leading-relaxed text-lg">
@@ -133,11 +126,10 @@ const HeadOfficePage = () => {
               </ul>
             </div>
           </section>
-        </Motion.div>
+        </motion.div>
 
-        <Motion.div variants={itemVariants} className="lg:col-span-5">
+        <motion.div variants={itemVariants} className="lg:col-span-5">
           <div className="space-y-6 sticky top-24">
-            {/* Contact Card */}
             <div className="bg-white p-8 rounded-3xl border border-gray-200 shadow-xl shadow-gray-100">
               <h3 className="text-2xl font-bold text-secondary mb-8 border-b pb-4">
                 معلومات التواصل
@@ -166,7 +158,7 @@ const HeadOfficePage = () => {
                 />
               </div>
 
-              <Motion.div
+              <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="mt-10 p-5 bg-red-50 rounded-2xl border-2 border-dashed border-red-200 text-center cursor-pointer"
                 onClick={() => navigate("/about/kuwait-branch")}
@@ -178,7 +170,7 @@ const HeadOfficePage = () => {
                 <p className="text-xs text-red-600 mt-1">
                   اضغط هنا للانتقال لبيانات الفرع الإقليمي
                 </p>
-              </Motion.div>
+              </motion.div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -194,9 +186,9 @@ const HeadOfficePage = () => {
               </div>
             </div>
           </div>
-        </Motion.div>
+        </motion.div>
       </div>
-    </Motion.div>
+    </motion.div>
   );
 };
 

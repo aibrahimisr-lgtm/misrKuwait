@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { insuranceConfigs } from "../../Config/formConfigs.js";
+import { insuranceConfigs } from "../../Config/formConfig.js";
 import { useFormContext } from "../../Context/FormContext.jsx";
 import { useOffer } from "../../Context/OfferContext";
 
@@ -17,7 +17,7 @@ const QuoteRequestModal = ({ onClose }) => {
 
   useEffect(() => {
     return () => resetForm();
-  }, []);
+  }, [resetForm]);
 
   const handleClose = () => {
     resetForm();
@@ -83,7 +83,7 @@ const QuoteRequestModal = ({ onClose }) => {
       try {
         await submitOffer(category, formData);
         handleClose();
-      } catch (err) {}
+      } catch {}
     }
   };
 

@@ -16,14 +16,12 @@ export const JobProvider = ({ children }) => {
     try {
       const response = await api.post("/KuwaitMIC/Contact/job", formData);
 
-      console.log("res:", response.data);
       setSuccess(true);
 
       return response.data;
     } catch (err) {
       const serverMessage =
         err.response?.data?.message || err.response?.data || err.message;
-      console.error("err:", err.response?.data || err);
 
       setError(
         typeof serverMessage === "object"

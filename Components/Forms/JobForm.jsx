@@ -48,7 +48,7 @@ const JobForm = () => {
 
     try {
       await submitJobApplication(payload);
-    } catch (err) {}
+    } catch {}
   };
 
   return (
@@ -59,8 +59,11 @@ const JobForm = () => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-3">
-            <label className="text-white/80 font-bold">الاسم بالكامل</label>
+            <label htmlFor="fullName" className="text-white/80 font-bold">
+              الاسم بالكامل
+            </label>
             <input
+              id="fullName"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               className="flex w-full border px-3 py-2 rounded-2xl border-white/10 bg-white/5 h-14 text-lg text-white"
@@ -70,8 +73,11 @@ const JobForm = () => {
           </div>
 
           <div className="space-y-3">
-            <label className="text-white/80 font-bold">رقم الهاتف</label>
+            <label htmlFor="phone" className="text-white/80 font-bold">
+              رقم الهاتف
+            </label>
             <input
+              id="phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="flex w-full border px-3 py-2 rounded-2xl border-white/10 bg-white/5 h-14 text-lg text-white"
@@ -82,8 +88,11 @@ const JobForm = () => {
           </div>
         </div>
         <div className="space-y-3">
-          <label className="text-white/80 font-bold">البريد الإلكتروني</label>
+          <label htmlFor="email" className="text-white/80 font-bold">
+            البريد الإلكتروني
+          </label>
           <input
+            id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
@@ -94,9 +103,12 @@ const JobForm = () => {
           />
         </div>
         <div className="space-y-3">
-          <label className="text-white/80 font-bold">الوظيفة المستهدفة</label>
+          <label htmlFor="position" className="text-white/80 font-bold">
+            الوظيفة المستهدفة
+          </label>
 
           <select
+            id="position"
             value={position}
             onChange={(e) => setPosition(e.target.value)}
             className="option-select flex w-full appearance-none border px-3 py-2 rounded-2xl border-white/10 focus:ring-red-100 h-14 text-lg text-white focus:outline-none focus:ring-2"

@@ -1,4 +1,4 @@
-import ReactGA from "react-ga4"; 
+import ReactGA from "react-ga4";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.png";
 import WhatsApp from "../assets/SocialIcons/Whatsapp.png";
@@ -160,7 +160,10 @@ const Footer = () => {
         </div>
 
         <div className="mt-10 sm:mt-14 lg:mt-16 pt-6 border-t border-gray-700 text-center text-sm sm:text-base text-gray-400">
-          <p>© 2026 مصر للتأمين - فرع الكويت. جميع الحقوق محفوظة.</p>
+          <p>
+            © {new Date().getFullYear()} مصر للتأمين - فرع الكويت. جميع الحقوق
+            محفوظة.
+          </p>
         </div>
       </div>
       <h1

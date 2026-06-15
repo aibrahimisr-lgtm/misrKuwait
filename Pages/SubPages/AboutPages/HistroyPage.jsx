@@ -1,14 +1,6 @@
 import { motion } from "framer-motion";
-import {
-  Landmark,
-  Calendar,
-  Award,
-  Globe,
-  ShieldCheck,
-  Shield,
-} from "lucide-react";
+import { Landmark, Globe, ShieldCheck, Flag, Award } from "lucide-react";
 
-import { Flag } from "lucide-react";
 import TalaatHarabImg from "../../../assets/Talaat Harab.png";
 import BranchesImg from "../../../assets/Branches.png";
 import KuwaitFlagImg from "../../../assets/kuwait-flag.png";
@@ -58,13 +50,11 @@ const historyData = [
   },
 ];
 
-const Motion = motion;
-
 const HistoryPage = () => {
   return (
     <div className="bg-gray-50 min-h-screen pt-25 overflow-hidden -mb-10">
       <section className="relative py-10 text-center px-5">
-        <Motion.div
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
@@ -74,15 +64,15 @@ const HistoryPage = () => {
             عقود من الثقة والأمان.. نستعرض معكم مسيرة بناء صرح تأميني بدأ بحلم
             طلعت حرب ليصبح رمزاً للاقتصاد الوطني.
           </p>
-        </Motion.div>
+        </motion.div>
       </section>
 
       <section className="max-w-6xl mx-auto px-6 py-10 relative overflow-hidden">
-        <div className="absolute left-1/2 transform -translate-x-1/2 h-full  w-0.5 bg-gray-200 hidden md:block" />
+        <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-gray-200 hidden md:block" />
 
         <div className="space-y-24">
           {historyData.map((item, index) => (
-            <Motion.div
+            <motion.div
               key={index}
               initial={{ opacity: 0, x: index % 2 === 0 ? 80 : -80 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -123,14 +113,14 @@ const HistoryPage = () => {
               <div className="absolute left-1/2 transform -translate-x-1/2 w-6 h-6 bg-red-600 rounded-full border-4 border-white shadow-md hidden md:block z-10"></div>
 
               <div className="hidden md:block w-[45%]"></div>
-            </Motion.div>
+            </motion.div>
           ))}
         </div>
       </section>
 
       <section className="bg-white py-20 border-t border-gray-100">
         <div className="max-w-4xl mx-auto text-center px-6">
-          <Motion.div
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
@@ -158,7 +148,7 @@ const HistoryPage = () => {
                 <p className="text-gray-500 font-bold">الأولى في مصر</p>
               </div>
             </div>
-          </Motion.div>
+          </motion.div>
         </div>
       </section>
     </div>

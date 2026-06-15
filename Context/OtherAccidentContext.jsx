@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { api } from "../lib/api";
 
 const OtherAccidentContext = createContext();
@@ -34,7 +34,6 @@ export const OtherAccidentProvider = ({ children }) => {
       }
 
       setError(message);
-      console.error("Submission failed:", message);
       throw new Error(message);
     } finally {
       setLoading(false);

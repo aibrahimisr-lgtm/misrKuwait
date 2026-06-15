@@ -12,7 +12,7 @@ const usePageTitle = () => {
     if (matchWithTitle?.handle?.title) {
       document.title = `مصر للتأمين | ${matchWithTitle.handle.title}`;
     } else {
-      document.title = "Insurance";
+      document.title = "مصر للتأمين - فرع الكويت";
     }
   }, [matches]);
 };
